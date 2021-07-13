@@ -20,7 +20,6 @@ global seqRepeat := Object()
 
 ; Reset
 ~esc::
-	MsgBox, hoge
 	ClearHistory()
 	seqRepeat := []
 Return
