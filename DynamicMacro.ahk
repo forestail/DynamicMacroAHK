@@ -19,14 +19,24 @@
 global flgPredict := 0
 global seqRepeat := Object()
 
+; Import ini file.(DynamicMacro.ini)
+IniRead, strInvokeHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, InvokeHotKey , ^t
+IniRead, strResetHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, ResetHotKey , ~esc
+
+Hotkey, %strInvokeHotKey%, Execute
+Return
+
+Hotkey, %strResetHotKey%, Reset
+Return
+
 ; Reset
-~esc::
+Reset:
 	; Clear key history & seqRepeat.
 	Reload
 Return
 
 ; Execute
-^t::
+Execute:
 	KeyHistory := ParseKeyHistory()
 	if IsDoubledHotkey(KeyHistory) == 0
 	{
