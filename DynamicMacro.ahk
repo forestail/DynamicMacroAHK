@@ -4,6 +4,7 @@
 ; 参考：http://www.pitecan.com/DynamicMacro/
 ; 
 ; 2021/07/12	公開 by forestail
+; 2021/07/15	リセット機能を改善
 ; 
 ; ※呼び出しホットキーのデフォルトは[Ctrl + t]になっているので、好みのものに変更してください。
 ; ■増井先生の論文にあって実装できていないもの
@@ -20,8 +21,8 @@ global seqRepeat := Object()
 
 ; Reset
 ~esc::
-	ClearHistory()
-	seqRepeat := []
+	; Clear key history & seqRepeat.
+	Reload
 Return
 
 ; Execute
@@ -89,14 +90,6 @@ IsDoubledHotkey(arr)
 	}
 }
 
-ClearHistory()
-{
-	Loop, 199
-	{
-		DllCall("keybd_event", "uchar", 0, "uchar", 0, "uint", 0, "uint", 0) ; keydown
-	}
-	DllCall("keybd_event", "uchar", 0, "uchar", 0, "uint", 2, "uint", 0) ; keyup
-}
 
 RemoveHotKey(arr)
 {
