@@ -1,27 +1,39 @@
 # DynamicMacroAHK
-[増井俊之氏](https://github.com/masui)のDynamic MacroのAutoHotKey実装。
+[増井俊之氏](https://github.com/masui)のDynamic MacroのAutoHotKey実装です。<br/>
+オリジナルはEmacs上で動作するマクロですが、AutoHotKeyで実装することにより、Windows上の全てのエディタ、アプリケーションで手軽にDynamic Macroを利用できます。
 
 参考：http://www.pitecan.com/DynamicMacro/
 
-### 使い方
+紹介記事：https://forestail.com/programing/dynamic-macro-autohotkey/
 
-`DynamicMacro.ini`の以下の部分でホットキーを設定してください。
+## 使い方
+### 必要なもの
+* [AutoHotKey本体](https://www.autohotkey.com/)がインストールされていること
+
+※ AutoHotKeyの`KeyHistory`を利用しているため、現状スクリプトをコンパイルした状態で使うことはできません。
+
+### 起動と使い方
+* `DynamicMacro.ahk`をダブルクリックして実行します。
+* 下記設定の`InvokeHotKey`で割り当てたホットキー(デフォルトは`Ctrl+T`)を入力すると、その時点までのキー操作から繰り返しを見つけてそれをマクロ実行します。
+* 繰り返しが見つからない場合は、キー操作を予測した上で繰り返しになるものを探します。
+  * まずキー操作から<img src=
+"https://render.githubusercontent.com/render/math?math=%5CLarge+%5Ctextstyle+%5Cmathbf%7BX%7D%5Cmathbf%7BY%7D%5Cmathbf%7BX%7D" 
+alt="\mathbf{X}\mathbf{Y}\mathbf{X}">を探し、<img src=
+"https://render.githubusercontent.com/render/math?math=%5CLarge+%5Ctextstyle+%5Cmathbf%7BY%7D" 
+alt="\mathbf{Y}">を予測して補完します。
+  * 以降続けてホットキーが入力されると<img src=
+"https://render.githubusercontent.com/render/math?math=%5CLarge+%5Ctextstyle+%5Cmathbf%7BX%7D%5Cmathbf%7BY%7D" 
+alt="\mathbf{X}\mathbf{Y}">をマクロ実行します。
+* 下記設定の`ResetHotKey`で割り当てたホットキー(デフォルトは`ESC`)を入力すると、これまでのキー入力履歴をクリアし、保持している繰り返しキー入力も削除します。
+
+
+### 設定
+
+`DynamicMacro.ini`の以下の部分で繰り返し実行とリセットのホットキーを設定してください。
 ```
 InvokeHotKey=^t
 ResetHotKey=~esc
 ```
-
-`InvokeHotKey`で割り当てたホットキーを入力すると、その時点までのキー操作から繰り返しを見つけてそれを再生します。<br/>
-繰り返しが見つからない場合は、キー操作を補完して繰り返しになるものを探します。<br/>
-まずキー操作から<img src=
-"https://render.githubusercontent.com/render/math?math=%5CLarge+%5Ctextstyle+%5Cmathbf%7BX%7D%5Cmathbf%7BY%7D%5Cmathbf%7BX%7D" 
-alt="\mathbf{X}\mathbf{Y}\mathbf{X}">を探し、<img src=
-"https://render.githubusercontent.com/render/math?math=%5CLarge+%5Ctextstyle+%5Cmathbf%7BY%7D" 
-alt="\mathbf{Y}">を補完します、以降続けてホットキーが入力されると<img src=
-"https://render.githubusercontent.com/render/math?math=%5CLarge+%5Ctextstyle+%5Cmathbf%7BX%7D%5Cmathbf%7BY%7D" 
-alt="\mathbf{X}\mathbf{Y}">を再生します。
-
-`ResetHotKey`で割り当てたホットキーを入力すると、これまでのキー入力履歴をクリアします。保持している繰り返しキー入力も削除します。
 
 
 利用状況を分析するために、ログ出力機能を付けています。<br/>
@@ -43,13 +55,11 @@ LogPath=DMlog.txt
 | 第4カラム | Predictの場合のXYXのXのキータイプ数         | 2                          |
 
 
-### 増井先生の論文にあって実装できていないもの
-* 繰り返し検知が意図しないものだった場合、予測モードに切り替える機能
-
-### その他
+## 注意制限事項
+* 増井先生の論文にある、繰り返し検知が意図しないものだった場合、予測モードに切り替える機能は未実装です。
 * 特定のエディタではなくOS全体で機能する点、AutoHotKeyの仕様による制限などを考慮し、能動的にキー履歴をクリアする機能を付けました。デフォルトでは[ESC]に割り当てています。
 
-### 動作している様子
+## 動作している様子
 * Windows標準のメモ帳
 
 ![DynamicMacroAHK](https://user-images.githubusercontent.com/11771/125603690-31f4a997-b305-469b-b568-439422401381.gif)
