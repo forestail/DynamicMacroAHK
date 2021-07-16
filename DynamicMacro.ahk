@@ -5,6 +5,7 @@
 ; 
 ; 2021/07/12	公開 by forestail
 ; 2021/07/15	リセット機能を改善
+; 2021/07/17	ログ機能追加
 ; 
 ; ※呼び出しホットキーのデフォルトは[Ctrl + t]になっているので、好みのものに変更してください。
 ; ■増井先生の論文にあって実装できていないもの
@@ -18,20 +19,27 @@
 #InstallKeybdHook
 global flgPredict := 0
 global seqRepeat := Object()
+global flgEnableLog
+global strLogPath
 
 ; Import ini file.(DynamicMacro.ini)
 IniRead, strInvokeHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, InvokeHotKey , ^t
 IniRead, strResetHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, ResetHotKey , ~esc
+IniRead, flgEnableLog, %A_ScriptDir%\DynamicMacro.ini, Main, EnableLog , 1
+IniRead, strLogPath, %A_ScriptDir%\DynamicMacro.ini, Main, LogPath , DMlog.txt
+
+; Set working directory to script directory.
+SetWorkingDir %A_ScriptDir%
 
 Hotkey, %strInvokeHotKey%, Execute
-Return
-
 Hotkey, %strResetHotKey%, Reset
 Return
+
 
 ; Reset
 Reset:
 	; Clear key history & seqRepeat.
+	LogWrite("Reset")
 	Reload
 Return
 
@@ -67,10 +75,12 @@ Execute:
 	if rep.MaxIndex() > 0
 	{
 		Send % GetMacro(rep)
+		LogWrite("Repeat," . rep.MaxIndex())
 	}
 	else if pre["Y"].MaxIndex() > 0
 	{
 		Send % GetMacro(pre["Y"])
+		LogWrite("Predict," . pre["Y"].MaxIndex() . "," . pre["X"].MaxIndex())
 		seqRepeat := []
 		for i,e in pre["X"]
 		{
@@ -258,6 +268,14 @@ ArrayCompare(a,b){
 	return 1
 }
 
+LogWrite(msg)
+{
+	if flgEnableLog
+	{
+		logText = %A_YYYY%/%A_MM%/%A_DD%,%A_Hour%:%A_Min%:%A_Sec%,%msg%
+		FileAppend,  %logText%`n, %strLogPath%
+	}
+}
 
 ; For Debug
 PrintArray( arr )
