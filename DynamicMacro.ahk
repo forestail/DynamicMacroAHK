@@ -5,7 +5,7 @@
 ; 
 ; 2021/07/12	公開 by forestail
 ; 2021/07/15	リセット機能を改善
-; 2021/07/17	ログ機能追加
+; 2021/07/17	ログ機能追加、キーコードをVKだけでなくSCもセットで送出するようにした
 ; 
 ; ※呼び出しホットキーのデフォルトは[Ctrl + t]になっているので、好みのものに変更してください。
 ; ■増井先生の論文にあって実装できていないもの
@@ -141,7 +141,8 @@ GetHistoryArray(arr)
 					{
 						Array.Insert("{" . InnerFunction . " down}")
 					}
-					Array.Insert("{vk" . element["VK"] . "}")
+					; Array.Insert("{vk" . element["VK"] . "}")
+					Array.Insert("{vk" . element["VK"] . "sc" . element["SC"] . "}")
 
 					if InnerFunction != 
 					{
@@ -297,7 +298,7 @@ PrintArray( arr )
 ; 	seq := RemoveHotKey(GetHistoryArray(KeyHistory))
 ; 	PrintArray(seq)
 ; 	PrintArray(FindRep(seq))
-; 	PrintArray(seqRepeat)
+;	PrintArray(seqRepeat)
 ; return
 
 
