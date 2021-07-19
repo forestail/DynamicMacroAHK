@@ -17,14 +17,18 @@
 #UseHook On
 #KeyHistory 200
 #InstallKeybdHook
-global flgPredict := 0
 global seqRepeat := Object()
+global seqPredict := Object()
 global flgEnableLog
 global strLogPath
+global seqKey := Object()
 
 ; Import ini file.(DynamicMacro.ini)
 IniRead, strInvokeHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, InvokeHotKey , ^t
+IniRead, strPredictHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, PredictHotKey , ^y
 IniRead, strResetHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, ResetHotKey , ~esc
+IniRead, strPrevRepeatHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, PrevRepeatHotKey , ^F9
+IniRead, strPrevPredictHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, PrevPredictHotKey , ^F10
 IniRead, flgEnableLog, %A_ScriptDir%\DynamicMacro.ini, Main, EnableLog , 1
 IniRead, strLogPath, %A_ScriptDir%\DynamicMacro.ini, Main, LogPath , DMlog.txt
 
@@ -32,7 +36,10 @@ IniRead, strLogPath, %A_ScriptDir%\DynamicMacro.ini, Main, LogPath , DMlog.txt
 SetWorkingDir %A_ScriptDir%
 
 Hotkey, %strInvokeHotKey%, Execute
+Hotkey, %strPredictHotKey%, ExecPredict
 Hotkey, %strResetHotKey%, Reset
+Hotkey, %strPrevRepeatHotKey%, ExecPrevRepeat
+Hotkey, %strPrevPredictHotKey%, ExecPrevPredict
 Return
 
 
@@ -61,16 +68,13 @@ Execute:
 	{
 		rep := FindRep(seq)
 		seqRepeat := rep
+		seqKey := seq
 
 		if rep.MaxIndex() == ""
 		{
 			pre := Predict(seq)
-			seqPredict := pre
 		}
-	
-		flgPredict := 0
 	}
-
 	
 	if rep.MaxIndex() > 0
 	{
@@ -91,7 +95,75 @@ Execute:
 			seqRepeat.Insert(e)
 		}
 	}
+Return
 
+ExecPrevRepeat:
+	Send % GetMacro(seqRepeat)
+Return
+
+ExecPrevPredict:
+	; PrintArray(seqKey)
+	if seqKey.MaxIndex() > 0
+	{
+		pre := Predict(seqKey)
+		seqKey := []
+		if pre["Y"].MaxIndex() > 0
+		{
+			Send % GetMacro(pre["Y"])
+			; Send % GetMacro(pre["X"])
+			seqRepeat := []
+			for i,e in pre["X"]
+			{
+				seqRepeat.Insert(e)
+			}
+			for i,e in pre["Y"]
+			{
+				seqRepeat.Insert(e)
+			}
+		}
+	}
+Return
+
+ExecPredict:
+	KeyHistory := ParseKeyHistory()
+	if IsDoubledHotkey(KeyHistory) == 0
+	{
+		seqRepeat := []
+	}
+
+	seq := RemoveHotKey(GetHistoryArray(KeyHistory))
+
+	if seqRepeat.MaxIndex() > 0
+	{
+		rep := seqRepeat
+	}
+	else
+	{
+		seqKey := seq
+
+		pre := Predict(seq)
+
+	}
+	
+	if rep.MaxIndex() > 0
+	{
+		Send % GetMacro(rep)
+		LogWrite("Repeat," . rep.MaxIndex())
+	}
+	else if pre["Y"].MaxIndex() > 0
+	{
+		Send % GetMacro(pre["Y"])
+		LogWrite("Predict," . pre["Y"].MaxIndex() . "," . pre["X"].MaxIndex())
+		seqRepeat := []
+		for i,e in pre["X"]
+		{
+			seqRepeat.Insert(e)
+		}
+		for i,e in pre["Y"]
+		{
+			seqRepeat.Insert(e)
+		}
+	}	
 Return
 
 IsDoubledHotkey(arr)
