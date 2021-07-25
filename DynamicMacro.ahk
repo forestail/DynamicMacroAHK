@@ -7,25 +7,30 @@
 ; 2021/07/15	リセット機能を改善
 ; 2021/07/17	ログ機能追加、キーコードをVKだけでなくSCもセットで送出するようにした
 ; 2021/07/25	リセットの連続呼び出しでスクリプトが複数起動する問題修正
+; 2021/07/25	予測モードを指定して予測・繰り返しを行うコマンド、前回の繰り返しを再度実行するコマンド、
+; 				前回繰り返しコマンドを実行した時点での予測モードでの再実行コマンドを追加。
 ; 
 ; ※呼び出しホットキーのデフォルトは[Ctrl + t]になっているので、好みのものに変更してください。
-; ■増井先生の論文にあって実装できていないもの
-; 　・繰り返し検知が意図しないものだった場合、予測モードに切り替える機能
+; 
 ; ■その他
 ; 　・特定のエディタではなくOS全体で機能する点、AutoHotKeyの仕様による制限などを考慮し、能動的にキー履歴をクリアする機能を付けました。
-; 　　デフォルトでは[ESC]に割り当てています。
+; 　　デフォルトでは[ESC]に割り当てています。ESCは他のアプリケーションでも必要なので、ホットキー指定は"~esc"のように"~"を付けてください。
 
 #UseHook On
 #KeyHistory 200
 #InstallKeybdHook
-global flgPredict := 0
 global seqRepeat := Object()
+global seqPredict := Object()
 global flgEnableLog
 global strLogPath
+global seqKey := Object()
 
 ; Import ini file.(DynamicMacro.ini)
 IniRead, strInvokeHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, InvokeHotKey , ^t
+IniRead, strPredictHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, PredictHotKey , ^y
 IniRead, strResetHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, ResetHotKey , ~esc
+IniRead, strPrevRepeatHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, PrevRepeatHotKey , ^F9
+IniRead, strPrevPredictHotKey, %A_ScriptDir%\DynamicMacro.ini, Main, PrevPredictHotKey , ^F10
 IniRead, flgEnableLog, %A_ScriptDir%\DynamicMacro.ini, Main, EnableLog , 1
 IniRead, strLogPath, %A_ScriptDir%\DynamicMacro.ini, Main, LogPath , DMlog.txt
 
@@ -33,7 +38,10 @@ IniRead, strLogPath, %A_ScriptDir%\DynamicMacro.ini, Main, LogPath , DMlog.txt
 SetWorkingDir %A_ScriptDir%
 
 Hotkey, %strInvokeHotKey%, Execute
+Hotkey, %strPredictHotKey%, ExecPredict
 Hotkey, %strResetHotKey%, Reset
+Hotkey, %strPrevRepeatHotKey%, ExecPrevRepeat
+Hotkey, %strPrevPredictHotKey%, ExecPrevPredict
 Return
 
 
@@ -63,16 +71,13 @@ Execute:
 	{
 		rep := FindRep(seq)
 		seqRepeat := rep
+		seqKey := seq
 
 		if rep.MaxIndex() == ""
 		{
 			pre := Predict(seq)
-			seqPredict := pre
 		}
-	
-		flgPredict := 0
 	}
-
 	
 	if rep.MaxIndex() > 0
 	{
@@ -93,7 +98,76 @@ Execute:
 			seqRepeat.Insert(e)
 		}
 	}
+Return
 
+ExecPrevRepeat:
+	Send % GetMacro(seqRepeat)
+Return
+
+ExecPrevPredict:
+	; PrintArray(seqKey)
+	if seqKey.MaxIndex() > 0
+	{
+		pre := Predict(seqKey)
+		seqKey := []
+		if pre["Y"].MaxIndex() > 0
+		{
+			Send % GetMacro(pre["Y"])
+			; Send % GetMacro(pre["X"])
+			seqRepeat := []
+			for i,e in pre["X"]
+			{
+				seqRepeat.Insert(e)
+			}
+			for i,e in pre["Y"]
+			{
+				seqRepeat.Insert(e)
+			}
+		}
+	}
+Return
+
+ExecPredict:
+	KeyHistory := ParseKeyHistory()
+	if IsDoubledHotkey(KeyHistory) == 0
+	{
+		MsgBox, hoge
+		seqRepeat := []
+	}
+
+	seq := RemoveHotKey(GetHistoryArray(KeyHistory))
+
+	if seqRepeat.MaxIndex() > 0
+	{
+		rep := seqRepeat
+	}
+	else
+	{
+		seqKey := seq
+
+		pre := Predict(seq)
+
+	}
+	
+	if rep.MaxIndex() > 0
+	{
+		Send % GetMacro(rep)
+		LogWrite("Repeat," . rep.MaxIndex())
+	}
+	else if pre["Y"].MaxIndex() > 0
+	{
+		Send % GetMacro(pre["Y"])
+		LogWrite("Predict," . pre["Y"].MaxIndex() . "," . pre["X"].MaxIndex())
+		seqRepeat := []
+		for i,e in pre["X"]
+		{
+			seqRepeat.Insert(e)
+		}
+		for i,e in pre["Y"]
+		{
+			seqRepeat.Insert(e)
+		}
+	}	
 Return
 
 IsDoubledHotkey(arr)
