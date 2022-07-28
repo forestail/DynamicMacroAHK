@@ -131,7 +131,6 @@ ExecPredict:
 	KeyHistory := ParseKeyHistory()
 	if IsDoubledHotkey(KeyHistory) == 0
 	{
-		MsgBox, hoge
 		seqRepeat := []
 	}
 
