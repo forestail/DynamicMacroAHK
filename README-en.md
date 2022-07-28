@@ -68,7 +68,7 @@ If `EnableLog` is set to 1, logs are output to the file in `LogPath`. The log fi
 The logs are in CSV format, and the meaning of each column is as follows
 
 | Column    | Content                                      | Example                  |
-|-------*----|---------------------------------------------|----------------------------|
+|-----------|---------------------------------------------|----------------------------|
 | 1st column | Timestamp                                   | 2021/07/17 01:01:01        |
 | 2nd column | Type                                  | Reset or Repeat or Predict |
 | 3rd column | Number of sended keys (Y in XYX for Predict) | 3                          |
